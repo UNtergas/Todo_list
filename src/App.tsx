@@ -1,23 +1,51 @@
 import React from 'react';
-import { AppContainer } from './styles';
-import { Column, Card, AddNewItem } from './components';
-import { useAppState } from './hooks';
+import { DragDropContext } from "react-beautiful-dnd";
 
+import { AppContainer } from './styles';
+import { AddNewItem, DragColumn } from './components';
+
+import { useAppState } from './hooks';
+import { StrictModeDroppable } from './utils/StrictModeDroppable';
 
 const App = () => {
   const { state, dispatch } = useAppState()
+  const onDragEnd = (result: any) => {
+    console.log(result)
+    const { destination, source, type } = result;
+    if (!destination) {
+      return;
+    }
+    if (destination.droppableId === source.droppableId && destination.index === source.index) {
+      return;
+    }
+    switch (type) {
+      case "column":
+        dispatch({ type: "MOVE_LIST", payload: { dragIndex: source.index, hoverIndex: destination.index } });
+        break
+      case "card":
+        dispatch({ type: "MOVE_TASK", payload: { dragIndex: source.index, hoverIndex: destination.index, sourceColumn: source.droppableId, targetColumn: destination.droppableId } })
+        break
+    }
 
+  };
   return (
-    <AppContainer>
-      {state.lists.map((list, i) => {
-        // if (list.id === state.draggedItem?.id) {
-        //   return <Column id={list.id} text={list.text} key={list.id} index={i} isDragged />
-        // }
-        return <Column id={list.id} text={list.text} key={list.id} index={i} />
-      })}
-      <AddNewItem toggleButtonText='+ Add new list'
-        onAdd={text => dispatch({ type: "ADD_LIST", payload: text })} />
-    </AppContainer>
+
+    <DragDropContext onDragEnd={onDragEnd}>
+      <StrictModeDroppable droppableId="column" direction='horizontal' type='column'>
+        {
+          provided => (
+            <AppContainer {...provided.droppableProps} ref={provided.innerRef}>
+              {state.lists.map((list, i) => (
+                <DragColumn id={list.id} text={list.text} key={list.id} index={i} />
+              ))}
+              <AddNewItem toggleButtonText='+ Add new list'
+                onAdd={text => dispatch({ type: "ADD_LIST", payload: text })} />
+              {provided.placeholder}
+            </AppContainer>
+          )
+        }
+      </StrictModeDroppable>
+    </DragDropContext>
   );
 }
 

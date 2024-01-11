@@ -8,5 +8,4 @@ const AppContainer = styled.div`
     padding: 20px;
     width: 100%;
 `
-
 export default AppContainer;

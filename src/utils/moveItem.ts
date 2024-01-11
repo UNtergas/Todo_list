@@ -1,7 +1,9 @@
-export const moveItem = <T>(Array: T[], from: number, to: number): T[] => {
-    const startIndex = to < 0 ? Array.length + to : to;
-    const item = Array.splice(from, 1)[0];
-    Array.splice(startIndex, 0, item);
-    return Array;
+
+export const moveItem = <T>(array: T[], from: number, to: number): T[] => {
+    const newArray = [...array];
+    const item = newArray.splice(from, 1)[0];
+    //here splice returns an array of the removed items, so we need to access the first item in the array
+    newArray.splice(to, 0, item);
+    return newArray;
 }
 
